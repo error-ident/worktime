@@ -429,10 +429,13 @@ function saveEdit(){
   if(!date)return;
   // Build ISO with local timezone offset so Date parsing is consistent
   // Store as plain local datetime string, not UTC ISO
-  data.records[editIdx]={date,
-    inTime: inV ? date+'T'+inV+':00' : null,
-    outTime: outV ? date+'T'+outV+':00' : null
-  };
+  const newInTime = inV ? date+'T'+inV+':00' : null;
+  const newOutTime = outV ? date+'T'+outV+':00' : null;
+  data.records[editIdx]={date, inTime:newInTime, outTime:newOutTime};
+  // If editing today's active record — sync todayIn too
+  if (data.todayIn && date === todayStr()) {
+    data.todayIn = newInTime;
+  }
   save();closeSheet();render();
 }
 function deleteRecord(){if(editIdx===null)return;data.records.splice(editIdx,1);save();closeSheet();render();}
