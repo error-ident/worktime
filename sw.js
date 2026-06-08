@@ -1,5 +1,11 @@
-const CACHE = 'wt-v1';
-const ASSETS = ['/worktime/', '/worktime/index.html', '/worktime/manifest.json'];
+const CACHE = 'wt-v2';
+const ASSETS = [
+  '/worktime/',
+  '/worktime/index.html',
+  '/worktime/manifest.json',
+  '/worktime/icons/icon-192.png',
+  '/worktime/icons/icon-512.png'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
