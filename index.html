@@ -291,12 +291,13 @@ function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
 function todayStr() { return new Date().toISOString().slice(0,10); }
 function fmtTime(iso) {
   if (!iso) return '--:--';
-  const d = new Date(iso);
+  const d = iso.length===19 ? new Date(iso.replace('T',' ')) : new Date(iso);
   return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
 }
 function fmtDate(s) { const [,m,d]=s.split('-'); return d+'/'+m; }
-function calcDiff(a,b) { return (!a||!b)?null:Math.round((new Date(b)-new Date(a))/60000-WORK_MIN); }
-function mustLeave(iso) { return iso?fmtTime(new Date(new Date(iso).getTime()+WORK_MIN*60000).toISOString()):'--:--'; }
+function parseLocal(s) { return s ? new Date(s.length===19 ? s.replace('T',' ') : s) : null; }
+function calcDiff(a,b) { if(!a||!b) return null; return Math.round((parseLocal(b)-parseLocal(a))/60000-WORK_MIN); }
+function mustLeave(iso) { if(!iso) return '--:--'; const d=parseLocal(iso); return fmtTime(new Date(d.getTime()+WORK_MIN*60000).toISOString()); }
 function diffStr(diff) {
   if (diff===null) return {t:'—',c:'zero'};
   const a=Math.abs(diff), h=Math.floor(a/60), m=a%60;
@@ -411,7 +412,12 @@ function saveEdit(){
   const date=document.getElementById('edit-date').value;
   const inV=document.getElementById('edit-in').value, outV=document.getElementById('edit-out').value;
   if(!date)return;
-  data.records[editIdx]={date,inTime:inV?date+'T'+inV+':00':null,outTime:outV?date+'T'+outV+':00':null};
+  // Build ISO with local timezone offset so Date parsing is consistent
+  // Store as plain local datetime string, not UTC ISO
+  data.records[editIdx]={date,
+    inTime: inV ? date+'T'+inV+':00' : null,
+    outTime: outV ? date+'T'+outV+':00' : null
+  };
   save();closeSheet();render();
 }
 function deleteRecord(){if(editIdx===null)return;data.records.splice(editIdx,1);save();closeSheet();render();}
