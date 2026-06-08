@@ -291,24 +291,39 @@ function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
 function todayStr() { return new Date().toISOString().slice(0,10); }
 function fmtTime(iso) {
   if (!iso) return '--:--';
-  const d = iso.length===19 ? new Date(iso.replace('T',' ')) : new Date(iso);
+  // Always parse as local: replace T with space so no UTC assumption
+  const s = iso.length >= 19 ? iso.slice(0,19).replace('T',' ') : iso;
+  const d = new Date(s);
   return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
 }
 function fmtDate(s) { const [,m,d]=s.split('-'); return d+'/'+m; }
 function parseLocal(s) { return s ? new Date(s.length===19 ? s.replace('T',' ') : s) : null; }
 function calcDiff(a,b) { if(!a||!b) return null; return Math.round((parseLocal(b)-parseLocal(a))/60000-WORK_MIN); }
-function mustLeave(iso) { if(!iso) return '--:--'; const d=parseLocal(iso); return fmtTime(new Date(d.getTime()+WORK_MIN*60000).toISOString()); }
+function mustLeave(iso) {
+  if(!iso) return '--:--';
+  const d = parseLocal(iso);
+  const ml = new Date(d.getTime()+WORK_MIN*60000);
+  return ml.getHours().toString().padStart(2,'0')+':'+ml.getMinutes().toString().padStart(2,'0');
+}
 function diffStr(diff) {
   if (diff===null) return {t:'—',c:'zero'};
   const a=Math.abs(diff), h=Math.floor(a/60), m=a%60;
-  let t = (h?h+'h ':'')+m+'m';
-  return diff>0?{t:'+'+t,c:'plus'}:diff<0?{t:'−'+t,c:'minus'}:{t:'0m',c:'zero'};
+  let t = (h?h+'ч ':'')+m+'м';
+  return diff>0?{t:'+'+t,c:'plus'}:diff<0?{t:'−'+t,c:'minus'}:{t:'0м',c:'zero'};
 }
 
-function handleIn() { data.todayIn=new Date().toISOString(); save(); render(); }
+function handleIn() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  // Store as local datetime string YYYY-MM-DDTHH:MM:SS
+  data.todayIn = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'T'+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  save(); render();
+}
 function handleOut() {
   if (!data.todayIn) return;
-  const date=todayStr(), out=new Date().toISOString();
+  const date=todayStr();
+  const now=new Date(), pad=n=>String(n).padStart(2,'0');
+  const out=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'T'+pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
   const rec={date,inTime:data.todayIn,outTime:out};
   const i=data.records.findIndex(r=>r.date===date);
   if(i>=0) data.records[i]=rec; else data.records.push(rec);
@@ -341,7 +356,7 @@ function renderTotal() {
   if (!data.records.length) { el.textContent='—'; el.className='total-val'; meta.textContent='нет записей'; return; }
   const total=data.records.reduce((s,r)=>s+(calcDiff(r.inTime,r.outTime)||0),0);
   const {t,c}=diffStr(total===0?0:total);
-  el.textContent=total===0?'0m':t; el.className='total-val '+c;
+  el.textContent=total===0?'0м':t; el.className='total-val '+c;
   const pos=data.records.filter(r=>(calcDiff(r.inTime,r.outTime)||0)>0).length;
   const neg=data.records.filter(r=>(calcDiff(r.inTime,r.outTime)||0)<0).length;
   meta.textContent=data.records.length+' дн  ·  +'+pos+'  −'+neg;
@@ -393,7 +408,7 @@ function renderWeek(el) {
     return `<div class="week-row">
       <div class="wlbl">${fmtDate(wk)} – ${fmtDate(end.toISOString().slice(0,10))}</div>
       <div class="wdays">${recs.length} дн</div>
-      <div class="wdiff ${c}">${total===0?'0m':t}</div>
+      <div class="wdiff ${c}">${total===0?'0м':t}</div>
     </div>`;
   }).join('');
 }
