@@ -1,16 +1,30 @@
 {
-  "name": "WORK//TIME",
-  "short_name": "WORK//TIME",
+  "name": "Work Time",
+  "short_name": "Work Time",
   "description": "Трекер рабочего времени",
   "id": "/worktime/",
   "start_url": "/worktime/",
   "scope": "/worktime/",
   "display": "standalone",
-  "background_color": "#080810",
-  "theme_color": "#080810",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     { "src": "/worktime/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/worktime/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Пришёл",
+      "short_name": "Пришёл",
+      "url": "/worktime/?action=in",
+      "icons": [{ "src": "/worktime/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ушёл",
+      "short_name": "Ушёл",
+      "url": "/worktime/?action=out",
+      "icons": [{ "src": "/worktime/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
