@@ -308,7 +308,7 @@ function mustLeave(iso) {
 function diffStr(diff) {
   if (diff===null) return {t:'—',c:'zero'};
   const a=Math.abs(diff), h=Math.floor(a/60), m=a%60;
-  let t = (h?h+'ч ':'')+m+'м';
+  let t = (h?h+'H ':'')+m+'M';
   return diff>0?{t:'+'+t,c:'plus'}:diff<0?{t:'−'+t,c:'minus'}:{t:'0м',c:'zero'};
 }
 
